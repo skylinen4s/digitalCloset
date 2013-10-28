@@ -44,38 +44,38 @@ int main( int argc, const char** argv )
     const String nestedCascadeOpt = "--nested-cascade";
     size_t nestedCascadeOptLen = nestedCascadeOpt.length();
   //  int i,j;
-	String inputName;
+        String inputName;
 
     help();
 
     CascadeClassifier cascade, nestedCascade;
     double scale = 1;
 
-	/*load cloth image*/
-	cloth_img = cvLoadImage("cloth.jpg",1);
-	if(!cloth_img) {
-		printf("No such image file\n");		
-		return 0;
-	}
-//	cvShowImage("ClOTH",cloth_img);
+        /*load cloth image*/
+        cloth_img = cvLoadImage("cloth.jpg",1);
+        if(!cloth_img) {
+                printf("No such image file\n");                
+                return 0;
+        }
+//        cvShowImage("ClOTH",cloth_img);
 
-		/*cloth_image_buf*/
-	#if 0
-		IplImage *cloth_buf = cvCreateImage(cvSize(300,300),IPL_DEPTH_8U,3);
-		printf("cloth_img widthStep is %d\n" , cloth_img->widthStep);
-		printf("cloth_buf widthStep is %d\n" , cloth_buf->widthStep);
+                /*cloth_image_buf*/
+        #if 0
+                IplImage *cloth_buf = cvCreateImage(cvSize(300,300),IPL_DEPTH_8U,3);
+                printf("cloth_img widthStep is %d\n" , cloth_img->widthStep);
+                printf("cloth_buf widthStep is %d\n" , cloth_buf->widthStep);
         for(i=0;i<300;i++){
             for(j=0;j<cloth_buf->widthStep;j=j+3){
                 cloth_buf->imageData[(i)*cloth_buf->widthStep+(j)] = cloth_img->imageData[(i)*cloth_buf->widthStep+(j)];//B           
                 cloth_buf->imageData[(i)*cloth_buf->widthStep+(j)+1] = cloth_img->imageData[(i)*cloth_buf->widthStep+(j)+1];//G
                 cloth_buf->imageData[(i)*cloth_buf->widthStep+(j)+2] = cloth_img->imageData[(i)*cloth_buf->widthStep+(j)+2];//R
-		        //cloth_buf->imageData[i*cloth_buf->widthStep+j]=0;
-            	//cloth_buf->imageData[i*cloth_buf->widthStep+j+1]=0;
-            	//cloth_buf->imageData[i*cloth_buf->widthStep+j+2]=255;
+                        //cloth_buf->imageData[i*cloth_buf->widthStep+j]=0;
+                    //cloth_buf->imageData[i*cloth_buf->widthStep+j+1]=0;
+                    //cloth_buf->imageData[i*cloth_buf->widthStep+j+2]=255;
             }
         }
         cvShowImage("BUFFER",cloth_buf);     
-	#endif
+        #endif
 
     for( int i = 1; i < argc; i++ )
     {
@@ -197,7 +197,7 @@ _cleanup_:
                     }
                     else
                     {
-                    	cerr << "Aw snap, couldn't read image " << buf << endl;
+                            cerr << "Aw snap, couldn't read image " << buf << endl;
                     }
                 }
                 fclose(f);
@@ -218,7 +218,7 @@ void detectAndDraw( Mat& img,
     double t = 0;
     vector<Rect> faces;
 
-	
+        
 
     const static Scalar colors[] =  { CV_RGB(0,0,255),
         CV_RGB(0,128,255),
@@ -227,7 +227,7 @@ void detectAndDraw( Mat& img,
         CV_RGB(255,128,0),
         CV_RGB(255,255,0),
         CV_RGB(255,0,0),
-        CV_RGB(255,0,255)} ;
+        CV_RGB(255,255,255)} ;
     Mat gray, smallImg( cvRound (img.rows/scale), cvRound(img.cols/scale), CV_8UC1 );
 
     cvtColor( img, gray, CV_BGR2GRAY );
@@ -250,44 +250,49 @@ void detectAndDraw( Mat& img,
         vector<Rect> nestedObjects;
         Point center;
         Scalar color = colors[i%8];
-        int radius,rec_width,rec_height,i,j;
+        int radius,rec_width,rec_height,i,j,k;
         center.x = cvRound((r->x + r->width*0.5)*scale);
         center.y = cvRound((r->y + r->height*0.5)*scale);
         radius = cvRound((r->width + r->height)*0.25*scale);
         //circle( img, center, radius, color, 3, 8, 0 );
-		
-		/*Rectangle*/
-		CvPoint point1, point2;		
-		point1.x = r->x - r->width*0.9;
+                
+                /*Rectangle*/
+                CvPoint point1, point2;                
+                point1.x = r->x - r->width*0.9;
         point2.x = r->x + r->width*1.8;
-        point1.y = r->y + r->height*1.4;
+        point1.y = r->y + r->height*0.9;
         point2.y = r->y + r->height*4.1;
-		//calculate rect. width&height
-		rec_width = point2.x-point1.x;
-		rec_height = point2.y-point1.y;
-		cv::rectangle(img, point1, point2, CV_RGB(255,0,0), 3, 8, 0); 
-		printf("rec_height=%d , rec_width=%d\n" , rec_height, rec_width);
+                //calculate rect. width&height
+                rec_width = point2.x-point1.x;
+                rec_height = point2.y-point1.y;
+                //cv::rectangle(img, point1, point2, CV_RGB(255,0,0), 3, 8, 0); 
+                printf("rec_height=%d , rec_width=%d\n" , rec_height, rec_width);
 
-		
-		#if 0
-		for(i=point1.y;i<rec_height;i++){
-			for(j=point1.x;j<rec_width;j+=3){
-				img.data[i*rec_width+j] = cloth_img->imageData[(i-point1.y)*rec_width+(j-point1.x)];			
-				img.data[i*rec_width+j+1] = cloth_img->imageData[(i-point1.y)*rec_width+(j-point1.x)+1];
-				img.data[i*rec_width+j+2] = cloth_img->imageData[(i-point1.y)*rec_width+(j-point1.x)+2];
-			}
-		}
-		#endif
-		printf("Point1 is (%d,%d)\n",point1.x,point1.y);
-		printf("Point2 is (%d,%d)\n",point2.x,point2.y);
-		 for(i = point1.y ; i < 480 ; i++){
-            for(j = point1.x ; j < 900 ; j = j+3){
-				img.data[i*1920+j] = cloth_img->imageData[(i-point1.y)*900+j-point1.x];            
-                img.data[i*1920+j+1] = cloth_img->imageData[(i-point1.y)*900+j-point1.x+1];
-                img.data[i*1920+j+2] = cloth_img->imageData[(i-point1.y)*900+j-point1.x+2];
-            }
-        }
-		if( nestedCascade.empty() )
+                
+                #if 0
+                for(i=point1.y;i<rec_height;i++){
+                        for(j=point1.x;j<rec_width;j+=3){
+                                img.data[i*rec_width+j] = cloth_img->imageData[(i-point1.y)*rec_width+(j-point1.x)];                        
+                                img.data[i*rec_width+j+1] = cloth_img->imageData[(i-point1.y)*rec_width+(j-point1.x)+1];
+                                img.data[i*rec_width+j+2] = cloth_img->imageData[(i-point1.y)*rec_width+(j-point1.x)+2];
+                        }
+                }
+                #endif
+                printf("Point1 is (%d,%d)\n",point1.x,point1.y);
+                printf("Point2 is (%d,%d)\n",point2.x,point2.y);
+
+                 for(i = point1.y+30 ; i < 480 ; i++){
+                    for(j = (point1.x)*3  ; j < (300+point1.x)*3 ; j = j+3){       /*if(signed char "-1" >> white[255])*/
+                        if(cloth_img->imageData[(i-point1.y)*900+j-point1.x*3]==-1&&cloth_img->imageData[(i-point1.y)*900+j-point1.x*3+1]==-1&&cloth_img->imageData[(i-point1.y)*900+j-point1.x*3+2]==-1){}
+                       else{
+                        img.data[i*1920+j-48] = cloth_img->imageData[(i-point1.y)*900+j-point1.x*3];            
+                        img.data[i*1920+j+1-48] = cloth_img->imageData[(i-point1.y)*900+j-point1.x*3+1];
+                        img.data[i*1920+j+2-48] = cloth_img->imageData[(i-point1.y)*900+j-point1.x*3+2];
+                        }
+                    }
+                }
+                printf("data = %d\n",cloth_img->imageData[(i-point1.y)*900+j-point1.x*3]);
+                if( nestedCascade.empty() )
             continue;
         smallImgROI = smallImg(*r);
         nestedCascade.detectMultiScale( smallImgROI, nestedObjects,
@@ -306,6 +311,6 @@ void detectAndDraw( Mat& img,
             circle( img, center, radius, color, 3, 8, 0 );
         }                                            
     }
-	//cvReleaseImage(&cloth_img);
+        //cvReleaseImage(&cloth_img);
     cv::imshow( "result", img );
 }
