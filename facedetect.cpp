@@ -52,7 +52,7 @@ int main( int argc, const char** argv )
     double scale = 1;
 
         /*load cloth image*/
-        cloth_img = cvLoadImage("cloth.jpg",1);
+        cloth_img = cvLoadImage("cloth3.jpg",1);
         if(!cloth_img) {
                 printf("No such image file\n");                
                 return 0;
@@ -206,7 +206,7 @@ _cleanup_:
     }
 
     cvDestroyWindow("result");
-
+    cvReleaseImage(&cloth_img);
     return 0;
 }
 
@@ -311,6 +311,7 @@ void detectAndDraw( Mat& img,
             circle( img, center, radius, color, 3, 8, 0 );
         }                                            
     }
-        //cvReleaseImage(&cloth_img);
+ 
     cv::imshow( "result", img );
+
 }
