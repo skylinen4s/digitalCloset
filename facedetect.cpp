@@ -8,6 +8,10 @@
 using namespace std;
 using namespace cv;
 
+
+/*control*/
+int on = 0;
+
 static void help()
 {
     cout << "\nThis program demonstrates the cascade recognizer. Now you can use Haar or LBP features.\n"
@@ -26,6 +30,9 @@ static void help()
 void detectAndDraw( Mat& img,
                    CascadeClassifier& cascade, CascadeClassifier& nestedCascade,
                    double scale);
+
+/*mosue handler*/
+void onMouse(int event,int x,int y,int flags,void* param);
 
 String cascadeName = "../../data/haarcascades/haarcascade_frontalface_alt.xml";
 String nestedCascadeName = "../../data/haarcascades/haarcascade_eye_tree_eyeglasses.xml";
@@ -49,9 +56,14 @@ int main( int argc, const char** argv )
 
     CascadeClassifier cascade, nestedCascade;
     double scale = 1;
+        /*show cloth image*/
+        cvNamedWindow( "closet", 1 );
+        cvSetMouseCallback("closet",onMouse,NULL);
+        printf("%d\n", on);
 
         /*load cloth image*/
         cloth_img = cvLoadImage("cloth.jpg",1);
+        cvShowImage("closet",cloth_img);
         if(!cloth_img) {
                 printf("No such image file\n");                
                 return 0;
@@ -187,7 +199,21 @@ _cleanup_:
     cvReleaseImage(&cloth_img);
     return 0;
 }
-
+void onMouse(int event,int x,int y,int flag,void* param){
+    
+    if(event==CV_EVENT_LBUTTONDOWN){
+        if(on == 1){on = 0;}
+        else if(on == 0){on = 1;}
+    }
+    if(event==CV_EVENT_LBUTTONUP){
+        printf("LLLLLLLLLLLLLLUUUUUUUUUUUUUUUUUUUUUUUOK\n");
+    }
+    if(flag==CV_EVENT_FLAG_LBUTTON){
+    }
+    if(event==CV_EVENT_MOUSEMOVE){
+        printf("Teeeeeeeeeeeeeeesssssssssssssssssstttttt\n");
+    }
+}
 void detectAndDraw( Mat& img,
                    CascadeClassifier& cascade, CascadeClassifier& nestedCascade,
                    double scale)
@@ -219,6 +245,7 @@ void detectAndDraw( Mat& img,
         Size(30, 30) );
     t = (double)cvGetTickCount() - t;
     printf( "detection time = %g ms\n", t/((double)cvGetTickFrequency()*1000.) );
+    printf("%d\n", on);
     for( vector<Rect>::const_iterator r = faces.begin(); r != faces.end(); r++, i++ )
     {
         Mat smallImgROI;
@@ -229,6 +256,8 @@ void detectAndDraw( Mat& img,
         center.x = cvRound((r->x + r->width*0.5)*scale);
         center.y = cvRound((r->y + r->height*0.5)*scale);
         radius = cvRound((r->width + r->height)*0.25*scale);
+        ////////////////////////////////////////////////////
+
         /*Draw circle around face*/
                  //circle( img, center, radius, color, 3, 8, 0 );             
         /*Rectangle*/
@@ -246,17 +275,22 @@ void detectAndDraw( Mat& img,
         printf("Point1 is (%d,%d)\n",point1.x,point1.y);
         printf("Point2 is (%d,%d)\n",point2.x,point2.y);
         /*Put on clothes function*/
-         for(i = point1.y+30 ; i < 480 ; i++){
-            for(j = (point1.x)*3  ; j < (300+point1.x)*3 ; j = j+3){       /*if(signed char "-1" >> white[255])*/
-                if(cloth_img->imageData[(i-point1.y)*900+j-point1.x*3]==-1&&cloth_img->imageData[(i-point1.y)*900+j-point1.x*3+1]==-1&&cloth_img->imageData[(i-point1.y)*900+j-point1.x*3+2]==-1){}
-               else{
-                img.data[i*1920+j-48] = cloth_img->imageData[(i-point1.y)*900+j-point1.x*3];            
-                img.data[i*1920+j+1-48] = cloth_img->imageData[(i-point1.y)*900+j-point1.x*3+1];
-                img.data[i*1920+j+2-48] = cloth_img->imageData[(i-point1.y)*900+j-point1.x*3+2];
+        if(on == 1){
+
+            for(i = point1.y+30 ; i < 480 ; i++){
+                for(j = (point1.x)*3  ; j < (300+point1.x)*3 ; j = j+3){       /*if(signed char "-1" >> white[255])*/
+                    if(cloth_img->imageData[(i-point1.y)*900+j-point1.x*3]==-1&&cloth_img->imageData[(i-point1.y)*900+j-point1.x*3+1]==-1&&cloth_img->imageData[(i-point1.y)*900+j-point1.x*3+2]==-1){}
+                   else{
+                    img.data[i*1920+j-48] = cloth_img->imageData[(i-point1.y)*900+j-point1.x*3];            
+                    img.data[i*1920+j+1-48] = cloth_img->imageData[(i-point1.y)*900+j-point1.x*3+1];
+                    img.data[i*1920+j+2-48] = cloth_img->imageData[(i-point1.y)*900+j-point1.x*3+2];
+                    }
                 }
             }
-        }
+        
         printf("data = %d\n",cloth_img->imageData[(i-point1.y)*900+j-point1.x*3]);
+        }
+       //////////////////////////////////////////////////////
         if( nestedCascade.empty() )
             continue;
         smallImgROI = smallImg(*r);
