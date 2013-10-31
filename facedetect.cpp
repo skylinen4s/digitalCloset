@@ -36,9 +36,11 @@ String nestedCascadeName = "../../data/haarcascades/haarcascade_eye_tree_eyeglas
 IplImage *cloth_img = NULL;
 IplImage *cloth_img2 = NULL;
 
-/*closet*/
+/*closet file name string*/
 char cloth1[]= {"cloth.jpg"};
-char cloth2[]= {"lena.jpg"};
+char cloth2[]= {"cloth1.jpg"};
+
+/*RGB tmp*/
 IplImage *cloth_output_frame = NULL;
 char cloth_img_R[150][150];
 char cloth_img_G[150][150];
@@ -296,59 +298,32 @@ IplImage * detectAndDraw( Mat& img,
                                                 }
                                 }
                 }
-#if 0
-                for(i = 0 ; i < 150 ; i++){ /*150  times*/
-                                for(j =0  ; j <450 ; j=j+3){   
-                                                img.data[i*960+j] =(unsigned char) cloth_img->imageData[i*450+j];            
-                                                img.data[i*960+j+1] = (unsigned char) cloth_img->imageData[i*450+j+1];
-                                                img.data[i*960+j+2] = (unsigned char) cloth_img->imageData[i*450+j+2];
-
-                                }
-                }
-#endif
-#if 0
-                for(i = 0 ; i < 150 ; i++){ /*150  times*/
-                                for(j =0  ; j <450 ; j+=3){   
-                                                cloth_img_B[i][j/3]        = cloth_img->imageData[i*452+j];
-                                                cloth_img_G[i][j/3] =  cloth_img->imageData[i*452+j+1];
-                                                cloth_img_R[i][j/3] =  cloth_img->imageData[i*452+j+2];
-                                }
-                }
-                for(i = 0 ; i < 150 ; i++){ /*150  times*/
-                                for(j =0  ; j <450 ; j=j+3){   
-                                                img.data[i*960+j] = cloth_img_B[i][j/3];            
-                                                img.data[i*960+j+1] = cloth_img_G[i][j/3];
-                                                img.data[i*960+j+2] = cloth_img_R[i][j/3];
-
-                                }
-                }
-#endif
                 /*printf format by img*/
                 printf("data = %d\n",cloth_img->imageData[(i-point1.y)*450+j-point1.x*3]);
                 printf("imgCols = %d imgCows = %d \n",img.cols , img.rows);
                 
 
-                /*unable to useing the nested detection*/
-                #if 0
-        if( nestedCascade.empty() )
-            continue;
-        smallImgROI = smallImg(*r);
-        nestedCascade.detectMultiScale( smallImgROI, nestedObjects,
-            1.1, 2, 0
-            //|CV_HAAR_FIND_BIGGEST_OBJECT
-            //|CV_HAAR_DO_ROUGH_SEARCH
-            //|CV_HAAR_DO_CANNY_PRUNING
-            |CV_HAAR_SCALE_IMAGE
-            ,
-            Size(30, 30) );
-        for( vector<Rect>::const_iterator nr = nestedObjects.begin(); nr != nestedObjects.end(); nr++ )
-        {
-            center.x = cvRound((r->x + nr->x + nr->width*0.5)*scale);
-            center.y = cvRound((r->y + nr->y + nr->height*0.5)*scale);
-            radius = cvRound((nr->width + nr->height)*0.25*scale);
-            circle( img, center, radius, color, 3, 8, 0 );
-        }                                            
-                #endif
+#if 0
+				/*unable to useing the nested detection*/
+				if( nestedCascade.empty() )
+						continue;
+				smallImgROI = smallImg(*r);
+				nestedCascade.detectMultiScale( smallImgROI, nestedObjects,
+								1.1, 2, 0
+								//|CV_HAAR_FIND_BIGGEST_OBJECT
+								//|CV_HAAR_DO_ROUGH_SEARCH
+								//|CV_HAAR_DO_CANNY_PRUNING
+								|CV_HAAR_SCALE_IMAGE
+								,
+								Size(30, 30) );
+				for( vector<Rect>::const_iterator nr = nestedObjects.begin(); nr != nestedObjects.end(); nr++ )
+				{
+						center.x = cvRound((r->x + nr->x + nr->width*0.5)*scale);
+						center.y = cvRound((r->y + nr->y + nr->height*0.5)*scale);
+						radius = cvRound((nr->width + nr->height)*0.25*scale);
+						circle( img, center, radius, color, 3, 8, 0 );
+				}                                            
+#endif
     }
     cv::imshow( "result", img );
         return cloth_img;
