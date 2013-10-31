@@ -13,7 +13,6 @@ void motor_init();
 //void motor_test(int controlTime);
 
 /*this .c file is not main code */
-#if 0
 int main(void)
 {
     motor_init();
@@ -35,14 +34,12 @@ int main(void)
         }
     return 0;
 }
-#endif
+
 
 void motor_init(){
     int count=0;
-    /* first layer */
     strcpy(MotorA[0], "/sys/class/gpio/gpio134/direction");
     strcpy(MotorA[1], "/sys/class/gpio/gpio135/direction");
-    /* second layer */
     strcpy(MotorB[0], "/sys/class/gpio/gpio136/direction");
     strcpy(MotorB[1], "/sys/class/gpio/gpio137/direction");    
 
@@ -136,5 +133,4 @@ void motor_control(int controlTime, int motorNumber, int orient){
         fclose(fp1);
         fclose(fp2);
 }
-
 
