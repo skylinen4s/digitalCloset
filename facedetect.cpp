@@ -4,9 +4,11 @@
 
 #include <iostream>
 #include <stdio.h>
-
 using namespace std;
 using namespace cv;
+/*Mouse control function decleared*/
+void onMouse1(int event,int x,int y,int flags,void* param);
+void onMouse2(int event,int x,int y,int flags,void* param);
 
 static void help()
 {
@@ -32,10 +34,17 @@ String nestedCascadeName = "../../data/haarcascades/haarcascade_eye_tree_eyeglas
 
 /*Load image file used*/
 IplImage *cloth_img = NULL;
+IplImage *cloth_img2 = NULL;
+
+/*closet*/
+char cloth1[]= {"cloth.jpg"};
+char cloth2[]= {"lena.jpg"};
 IplImage *cloth_output_frame = NULL;
 char cloth_img_R[150][150];
 char cloth_img_G[150][150];
 char cloth_img_B[150][150];
+
+
 
 int main( int argc, const char** argv )
 {
@@ -48,15 +57,23 @@ int main( int argc, const char** argv )
     const String nestedCascadeOpt = "--nested-cascade";
     size_t nestedCascadeOptLen = nestedCascadeOpt.length();
     String inputName;
-	int frame_index;
+        int frame_index;
     help();
 
     CascadeClassifier cascade, nestedCascade;
     double scale = 1;
 
-        /*load cloth image*/
-        cloth_img = cvLoadImage("cloth1.jpg",1);
-		cv::imshow("cloth img",cloth_img);
+    /*construct closets*/
+    cvNamedWindow( "closet1", 1 );
+    cvNamedWindow( "closet2", 1 );
+    /*mouse control*/
+    cvSetMouseCallback("closet1",onMouse1,NULL);
+    cvSetMouseCallback("closet2",onMouse2,NULL);
+    /*load cloth image*/
+    cloth_img = cvLoadImage(cloth1,1);
+    cloth_img2 = cvLoadImage(cloth2,1);
+    cvShowImage("closet1",cloth_img);
+    cvShowImage("closet2",cloth_img2);
         if(!cloth_img) {
                 printf("No such image file\n");                
                 return 0;
@@ -103,8 +120,8 @@ int main( int argc, const char** argv )
     if( inputName.empty() || (isdigit(inputName.c_str()[0]) && inputName.c_str()[1] == '\0') )
     {
         capture = cvCaptureFromCAM( inputName.empty() ? 0 : inputName.c_str()[0] - '0' );
-		cvSetCaptureProperty(capture,CV_CAP_PROP_FRAME_WIDTH,320);                      
-		cvSetCaptureProperty(capture,CV_CAP_PROP_FRAME_HEIGHT,240);	
+                cvSetCaptureProperty(capture,CV_CAP_PROP_FRAME_WIDTH,320);                      
+                cvSetCaptureProperty(capture,CV_CAP_PROP_FRAME_HEIGHT,240);        
         int c = inputName.empty() ? 0 : inputName.c_str()[0] - '0' ;
         if(!capture) cout << "Capture from CAM " <<  c << " didn't work" << endl;
     }
@@ -129,31 +146,31 @@ int main( int argc, const char** argv )
     {
         cout << "In capture ..." << endl;
 
-		for(frame_index=0 ;;frame_index++)
-		{
-				IplImage* iplImg = cvQueryFrame( capture );
-				frame = iplImg;
-				printf("%d %d \n" , frame.cols,frame.rows);
-				if( frame.empty() )
-						break;
+                for(frame_index=0 ;;frame_index++)
+                {
+                                IplImage* iplImg = cvQueryFrame( capture );
+                                frame = iplImg;
+                                printf("%d %d \n" , frame.cols,frame.rows);
+                                if( frame.empty() )
+                                                break;
 
 
-				/*in our project , we capture 100 frame , but only detect face 1 frame */
-				if(( (frame_index%1) == 0)&&(frame_index!=0)){ 
-				//if(1){ 
-						if( iplImg->origin == IPL_ORIGIN_TL )
-								frame.copyTo( frameCopy );
-						else
-								flip( frame, frameCopy, 0 );
+                                /*in our project , we capture 100 frame , but only detect face 1 frame */
+                                if(( (frame_index%1) == 0)&&(frame_index!=0)){ 
+                                //if(1){ 
+                                                if( iplImg->origin == IPL_ORIGIN_TL )
+                                                                frame.copyTo( frameCopy );
+                                                else
+                                                                flip( frame, frameCopy, 0 );
 
-						cloth_output_frame = detectAndDraw( frameCopy, cascade, nestedCascade, scale );
-				}
-				else{
-						cv::imshow( "result", frame );
-				}
-				if( waitKey( 10 ) >= 0 )
-						goto _cleanup_;
-		}
+                                                cloth_output_frame = detectAndDraw( frameCopy, cascade, nestedCascade, scale );
+                                }
+                                else{
+                                                cv::imshow( "result", frame );
+                                }
+                                if( waitKey( 10 ) >= 0 )
+                                                goto _cleanup_;
+                }
 
 
         waitKey(0);
@@ -267,52 +284,52 @@ IplImage * detectAndDraw( Mat& img,
 
 
 
-		/*Put on clothes function*/
-		for(i = point1.y ; i < point1.y+150 ; i++){ /*150  times*/
-				for(j = (point1.x)*3  ; j < (150+point1.x)*3 ; j = j+3){       /*if(signed char "-1" >> white[255])*/
-						//if(cloth_img->imageData[(i-point1.y)*452+j-point1.x*3]==255&&cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+1]==255&&cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+2]==255){/*do not copy from cloth_image*/}
-						if( (cloth_img->imageData[(i-point1.y)*452+j-point1.x*3] + cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+1] + cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+2])/3 >200 ){/*do not copy from cloth_image*/}
-						else{
-								img.data[i*( img.cols * 3)+j] = cloth_img->imageData[(i-point1.y)*452+j-point1.x*3];            
-								img.data[i*( img.cols * 3)+j+1] = cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+1];
-								img.data[i*( img.cols * 3)+j+2] = cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+2];
-						}
-				}
-		}
+                /*Put on clothes function*/
+                for(i = point1.y ; i < point1.y+150 ; i++){ /*150  times*/
+                                for(j = (point1.x)*3  ; j < (150+point1.x)*3 ; j = j+3){       /*if(signed char "-1" >> white[255])*/
+                                                //if(cloth_img->imageData[(i-point1.y)*452+j-point1.x*3]==255&&cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+1]==255&&cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+2]==255){/*do not copy from cloth_image*/}
+                                                if( (cloth_img->imageData[(i-point1.y)*452+j-point1.x*3] + cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+1] + cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+2])/3 >200 ){/*do not copy from cloth_image*/}
+                                                else{
+                                                                img.data[i*( img.cols * 3)+j] = cloth_img->imageData[(i-point1.y)*452+j-point1.x*3];            
+                                                                img.data[i*( img.cols * 3)+j+1] = cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+1];
+                                                                img.data[i*( img.cols * 3)+j+2] = cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+2];
+                                                }
+                                }
+                }
 #if 0
-		for(i = 0 ; i < 150 ; i++){ /*150  times*/
-				for(j =0  ; j <450 ; j=j+3){   
-						img.data[i*960+j] =(unsigned char) cloth_img->imageData[i*450+j];            
-						img.data[i*960+j+1] = (unsigned char) cloth_img->imageData[i*450+j+1];
-						img.data[i*960+j+2] = (unsigned char) cloth_img->imageData[i*450+j+2];
+                for(i = 0 ; i < 150 ; i++){ /*150  times*/
+                                for(j =0  ; j <450 ; j=j+3){   
+                                                img.data[i*960+j] =(unsigned char) cloth_img->imageData[i*450+j];            
+                                                img.data[i*960+j+1] = (unsigned char) cloth_img->imageData[i*450+j+1];
+                                                img.data[i*960+j+2] = (unsigned char) cloth_img->imageData[i*450+j+2];
 
-				}
-		}
+                                }
+                }
 #endif
 #if 0
-		for(i = 0 ; i < 150 ; i++){ /*150  times*/
-				for(j =0  ; j <450 ; j+=3){   
-						cloth_img_B[i][j/3]	= cloth_img->imageData[i*452+j];
-						cloth_img_G[i][j/3] =  cloth_img->imageData[i*452+j+1];
-						cloth_img_R[i][j/3] =  cloth_img->imageData[i*452+j+2];
-				}
-		}
-		for(i = 0 ; i < 150 ; i++){ /*150  times*/
-				for(j =0  ; j <450 ; j=j+3){   
-						img.data[i*960+j] = cloth_img_B[i][j/3];            
-						img.data[i*960+j+1] = cloth_img_G[i][j/3];
-						img.data[i*960+j+2] = cloth_img_R[i][j/3];
+                for(i = 0 ; i < 150 ; i++){ /*150  times*/
+                                for(j =0  ; j <450 ; j+=3){   
+                                                cloth_img_B[i][j/3]        = cloth_img->imageData[i*452+j];
+                                                cloth_img_G[i][j/3] =  cloth_img->imageData[i*452+j+1];
+                                                cloth_img_R[i][j/3] =  cloth_img->imageData[i*452+j+2];
+                                }
+                }
+                for(i = 0 ; i < 150 ; i++){ /*150  times*/
+                                for(j =0  ; j <450 ; j=j+3){   
+                                                img.data[i*960+j] = cloth_img_B[i][j/3];            
+                                                img.data[i*960+j+1] = cloth_img_G[i][j/3];
+                                                img.data[i*960+j+2] = cloth_img_R[i][j/3];
 
-				}
-		}
+                                }
+                }
 #endif
-		/*printf format by img*/
-		printf("data = %d\n",cloth_img->imageData[(i-point1.y)*450+j-point1.x*3]);
-		printf("imgCols = %d imgCows = %d \n",img.cols , img.rows);
-		
+                /*printf format by img*/
+                printf("data = %d\n",cloth_img->imageData[(i-point1.y)*450+j-point1.x*3]);
+                printf("imgCols = %d imgCows = %d \n",img.cols , img.rows);
+                
 
-		/*unable to useing the nested detection*/
-		#if 0
+                /*unable to useing the nested detection*/
+                #if 0
         if( nestedCascade.empty() )
             continue;
         smallImgROI = smallImg(*r);
@@ -331,9 +348,37 @@ IplImage * detectAndDraw( Mat& img,
             radius = cvRound((nr->width + nr->height)*0.25*scale);
             circle( img, center, radius, color, 3, 8, 0 );
         }                                            
-		#endif
+                #endif
     }
     cv::imshow( "result", img );
-	return cloth_img;
+        return cloth_img;
 
+}
+void onMouse1(int event,int x,int y,int flag,void* param){
+   
+   if(event==CV_EVENT_LBUTTONDOWN){
+            cvReleaseImage(&cloth_img);
+            cloth_img = cvLoadImage(cloth1,1);
+      }
+      if(event==CV_EVENT_LBUTTONUP){
+          printf("LLLLLLLLLLLLLLUUUUUUUUUUUUUUUUUUUUUUUOK\n");
+      }
+      if(flag==CV_EVENT_FLAG_LBUTTON){
+      }
+      if(event==CV_EVENT_MOUSEMOVE){
+      }
+  }
+void onMouse2(int event,int x,int y,int flag,void* param){
+    
+    if(event==CV_EVENT_LBUTTONDOWN){
+            cvReleaseImage(&cloth_img);
+            cloth_img = cvLoadImage(cloth2,1);
+    }
+    if(event==CV_EVENT_LBUTTONUP){
+          printf("LLLLLLLLLLLLLLUUUUUUUUUUUUUUUUUUUUUUUOK\n");
+    }
+    if(flag==CV_EVENT_FLAG_LBUTTON){
+    }
+    if(event==CV_EVENT_MOUSEMOVE){
+    }
 }
