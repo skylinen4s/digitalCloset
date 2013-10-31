@@ -32,13 +32,19 @@ void detectAndDraw( Mat& img,
                    double scale);
 
 /*mosue handler*/
-void onMouse(int event,int x,int y,int flags,void* param);
+void onMouse1(int event,int x,int y,int flags,void* param);
+void onMouse2(int event,int x,int y,int flags,void* param);
 
 String cascadeName = "../../data/haarcascades/haarcascade_frontalface_alt.xml";
 String nestedCascadeName = "../../data/haarcascades/haarcascade_eye_tree_eyeglasses.xml";
 
 /*Load image file used*/
 IplImage *cloth_img = NULL;
+IplImage *cloth_img2 = NULL;
+
+/*closet*/
+char cloth1[]= {"cloth.jpg"};
+char cloth2[]= {"lena.jpg"};
 
 int main( int argc, const char** argv )
 {
@@ -57,13 +63,17 @@ int main( int argc, const char** argv )
     CascadeClassifier cascade, nestedCascade;
     double scale = 1;
         /*show cloth image*/
-        cvNamedWindow( "closet", 1 );
-        cvSetMouseCallback("closet",onMouse,NULL);
+        cvNamedWindow( "closet1", 1 );
+        cvNamedWindow( "closet2", 1 );
+        cvSetMouseCallback("closet1",onMouse1,NULL);
+        cvSetMouseCallback("closet2",onMouse2,NULL);
         printf("%d\n", on);
 
         /*load cloth image*/
-        cloth_img = cvLoadImage("cloth.jpg",1);
-        cvShowImage("closet",cloth_img);
+        cloth_img = cvLoadImage(cloth1,1);
+        cloth_img2 = cvLoadImage(cloth2,1);
+        cvShowImage("closet1",cloth_img);
+        cvShowImage("closet2",cloth_img2);
         if(!cloth_img) {
                 printf("No such image file\n");                
                 return 0;
@@ -199,11 +209,11 @@ _cleanup_:
     cvReleaseImage(&cloth_img);
     return 0;
 }
-void onMouse(int event,int x,int y,int flag,void* param){
+void onMouse1(int event,int x,int y,int flag,void* param){
     
     if(event==CV_EVENT_LBUTTONDOWN){
-        if(on == 1){on = 0;}
-        else if(on == 0){on = 1;}
+            cvReleaseImage(&cloth_img);
+            cloth_img = cvLoadImage(cloth1,1);
     }
     if(event==CV_EVENT_LBUTTONUP){
         printf("LLLLLLLLLLLLLLUUUUUUUUUUUUUUUUUUUUUUUOK\n");
@@ -211,7 +221,20 @@ void onMouse(int event,int x,int y,int flag,void* param){
     if(flag==CV_EVENT_FLAG_LBUTTON){
     }
     if(event==CV_EVENT_MOUSEMOVE){
-        printf("Teeeeeeeeeeeeeeesssssssssssssssssstttttt\n");
+    }
+}
+void onMouse2(int event,int x,int y,int flag,void* param){
+    
+    if(event==CV_EVENT_LBUTTONDOWN){
+            cvReleaseImage(&cloth_img);
+            cloth_img = cvLoadImage(cloth2,1);
+    }
+    if(event==CV_EVENT_LBUTTONUP){
+        printf("LLLLLLLLLLLLLLUUUUUUUUUUUUUUUUUUUUUUUOK\n");
+    }
+    if(flag==CV_EVENT_FLAG_LBUTTON){
+    }
+    if(event==CV_EVENT_MOUSEMOVE){
     }
 }
 void detectAndDraw( Mat& img,
@@ -275,8 +298,7 @@ void detectAndDraw( Mat& img,
         printf("Point1 is (%d,%d)\n",point1.x,point1.y);
         printf("Point2 is (%d,%d)\n",point2.x,point2.y);
         /*Put on clothes function*/
-        if(on == 1){
-
+        //if(on == 1){
             for(i = point1.y+30 ; i < 480 ; i++){
                 for(j = (point1.x)*3  ; j < (300+point1.x)*3 ; j = j+3){       /*if(signed char "-1" >> white[255])*/
                     if(cloth_img->imageData[(i-point1.y)*900+j-point1.x*3]==-1&&cloth_img->imageData[(i-point1.y)*900+j-point1.x*3+1]==-1&&cloth_img->imageData[(i-point1.y)*900+j-point1.x*3+2]==-1){}
@@ -289,7 +311,7 @@ void detectAndDraw( Mat& img,
             }
         
         printf("data = %d\n",cloth_img->imageData[(i-point1.y)*900+j-point1.x*3]);
-        }
+        //}
        //////////////////////////////////////////////////////
         if( nestedCascade.empty() )
             continue;
