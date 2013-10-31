@@ -32,6 +32,8 @@ IplImage * detectAndDraw( Mat& img,
 String cascadeName = "../../data/haarcascades/haarcascade_frontalface_alt.xml";
 String nestedCascadeName = "../../data/haarcascades/haarcascade_eye_tree_eyeglasses.xml";
 
+
+/*===================================global var================================== */
 /*Load image file used*/
 IplImage *cloth_img = NULL;
 IplImage *cloth_img2 = NULL;
@@ -45,6 +47,11 @@ IplImage *cloth_output_frame = NULL;
 char cloth_img_R[150][150];
 char cloth_img_G[150][150];
 char cloth_img_B[150][150];
+
+/*switch on off copy cloth img*/
+int switch_cloth_trigger = 0;
+
+/*================================================================================ */
 
 
 
@@ -285,23 +292,25 @@ IplImage * detectAndDraw( Mat& img,
 
 
 
+		if(switch_cloth_trigger){
+				/*Put on clothes function*/
+				for(i = point1.y ; i < point1.y+150 ; i++){ /*150  times*/
+						for(j = (point1.x)*3  ; j < (150+point1.x)*3 ; j = j+3){       /*if(signed char "-1" >> white[255])*/
+								//if(cloth_img->imageData[(i-point1.y)*452+j-point1.x*3]==255&&cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+1]==255&&cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+2]==255){/*do not copy from cloth_image*/}
+								if( (cloth_img->imageData[(i-point1.y)*452+j-point1.x*3] + cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+1] + cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+2])/3 >200 ){/*do not copy from cloth_image*/}
+								else{
+										img.data[i*( img.cols * 3)+j] = cloth_img->imageData[(i-point1.y)*452+j-point1.x*3];            
+										img.data[i*( img.cols * 3)+j+1] = cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+1];
+										img.data[i*( img.cols * 3)+j+2] = cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+2];
+								}
+						}
+				}
 
-                /*Put on clothes function*/
-                for(i = point1.y ; i < point1.y+150 ; i++){ /*150  times*/
-                                for(j = (point1.x)*3  ; j < (150+point1.x)*3 ; j = j+3){       /*if(signed char "-1" >> white[255])*/
-                                                //if(cloth_img->imageData[(i-point1.y)*452+j-point1.x*3]==255&&cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+1]==255&&cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+2]==255){/*do not copy from cloth_image*/}
-                                                if( (cloth_img->imageData[(i-point1.y)*452+j-point1.x*3] + cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+1] + cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+2])/3 >200 ){/*do not copy from cloth_image*/}
-                                                else{
-                                                                img.data[i*( img.cols * 3)+j] = cloth_img->imageData[(i-point1.y)*452+j-point1.x*3];            
-                                                                img.data[i*( img.cols * 3)+j+1] = cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+1];
-                                                                img.data[i*( img.cols * 3)+j+2] = cloth_img->imageData[(i-point1.y)*452+j-point1.x*3+2];
-                                                }
-                                }
-                }
-                /*printf format by img*/
-                printf("data = %d\n",cloth_img->imageData[(i-point1.y)*450+j-point1.x*3]);
-                printf("imgCols = %d imgCows = %d \n",img.cols , img.rows);
-                
+
+				/*printf format by img*/
+				printf("data = %d\n",cloth_img->imageData[(i-point1.y)*450+j-point1.x*3]);
+				printf("imgCols = %d imgCows = %d \n",img.cols , img.rows);
+		}                
 
 #if 0
 				/*unable to useing the nested detection*/
@@ -330,30 +339,38 @@ IplImage * detectAndDraw( Mat& img,
 
 }
 void onMouse1(int event,int x,int y,int flag,void* param){
-   
-   if(event==CV_EVENT_LBUTTONDOWN){
-            cvReleaseImage(&cloth_img);
-            cloth_img = cvLoadImage(cloth1,1);
-      }
-      if(event==CV_EVENT_LBUTTONUP){
-          printf("LLLLLLLLLLLLLLUUUUUUUUUUUUUUUUUUUUUUUOK\n");
-      }
-      if(flag==CV_EVENT_FLAG_LBUTTON){
-      }
-      if(event==CV_EVENT_MOUSEMOVE){
-      }
-  }
+
+		/*mouse left button down*/
+		if(event==CV_EVENT_LBUTTONDOWN){
+				cvReleaseImage(&cloth_img);
+				cloth_img = cvLoadImage(cloth1,1);
+				switch_cloth_trigger = 1;
+		}
+		/*mouse right button down*/
+		if(event==CV_EVENT_RBUTTONDOWN){
+				printf("switch_cloth_trigger=0 \n");
+				switch_cloth_trigger = 0;
+		}
+		if(flag==CV_EVENT_FLAG_LBUTTON){
+		}
+		if(event==CV_EVENT_MOUSEMOVE){
+		}
+}
 void onMouse2(int event,int x,int y,int flag,void* param){
-    
-    if(event==CV_EVENT_LBUTTONDOWN){
-            cvReleaseImage(&cloth_img);
-            cloth_img = cvLoadImage(cloth2,1);
-    }
-    if(event==CV_EVENT_LBUTTONUP){
-          printf("LLLLLLLLLLLLLLUUUUUUUUUUUUUUUUUUUUUUUOK\n");
-    }
-    if(flag==CV_EVENT_FLAG_LBUTTON){
-    }
-    if(event==CV_EVENT_MOUSEMOVE){
-    }
+
+		/*mouse left button down*/
+		if(event==CV_EVENT_LBUTTONDOWN){
+				cvReleaseImage(&cloth_img);
+				cloth_img = cvLoadImage(cloth2,1);
+				switch_cloth_trigger = 1;
+		}
+		/*mouse right button down*/
+		if(event==CV_EVENT_RBUTTONDOWN){
+				printf("switch_cloth_trigger=0 \n");
+				switch_cloth_trigger = 0;
+		}
+		if(flag==CV_EVENT_FLAG_LBUTTON){
+		}
+		if(event==CV_EVENT_MOUSEMOVE){
+		}
 }
