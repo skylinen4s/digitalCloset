@@ -43,11 +43,11 @@ String nestedCascadeName = "../../data/haarcascades/haarcascade_eye_tree_eyeglas
 IplImage *cloth_img_select = cvCreateImage(cvSize(150,150), IPL_DEPTH_8U, 3);
 IplImage *cloth_img1 = NULL;
 IplImage *cloth_img2 = NULL;
-IplImage *cloth_img3 = NULL;
+//IplImage *cloth_img3 = NULL;
 
 /*closet file name string*/
-char cloth1[]= {"cloth1.jpg"};
-char cloth2[]= {"cloth3.bmp"};
+char cloth1[]= {"cloth1.bmp"};
+char cloth2[]= {"cloth2.jpg"};
 char cloth3[]= {"cloth3.bmp"};
 
 /*switch on off copy cloth img*/
@@ -76,9 +76,13 @@ int main( int argc, const char** argv )
     double scale = 1;
 
 	/*construct closets*/
-    cvNamedWindow( "closet1", 1 );
-    cvNamedWindow( "closet2", 1 );
-    cvNamedWindow( "closet3", 1 );
+    cvNamedWindow( "closet1", CV_WINDOW_AUTOSIZE );
+    cvNamedWindow( "closet2", CV_WINDOW_AUTOSIZE );
+    //cvNamedWindow( "closet3", 1 );
+
+
+    cvMoveWindow("closet1", 360, 0);
+    cvMoveWindow("closet2", 800, 0);
 
     /*mouse control*/                                                                       
     cvSetMouseCallback("closet1",onMouse1,NULL);
@@ -87,8 +91,8 @@ int main( int argc, const char** argv )
 	/*load cloth image*/
 	cloth_img1 = cvLoadImage(cloth1,1);
 	cloth_img2 = cvLoadImage(cloth2,1);
-	cloth_img3 = cvLoadImage(cloth3,1);
-	if(!cloth_img1 || !cloth_img2 || !cloth_img3) {
+	//cloth_img3 = cvLoadImage(cloth3,1);
+	if(!cloth_img1 || !cloth_img2/*|| !cloth_img3*/) {
 			printf("No such image file\n");                
 			return 0;
 	}
@@ -98,7 +102,7 @@ int main( int argc, const char** argv )
 			cvShowImage("closet2",cloth_img2);
 	}
 
-
+	/*hardcode cascade*/
     for( int i = 1; i < argc; i++ )
     {
         cout << "Processing " << i << " " <<  argv[i] << endl;
@@ -128,6 +132,9 @@ int main( int argc, const char** argv )
             inputName.assign( argv[i] );
     }
 
+
+	
+	cascadeName="haarcascade_frontalface_alt.xml";
     if( !cascade.load( cascadeName ) )
     {
         cerr << "ERROR: Could not load classifier cascade" << endl;
@@ -261,10 +268,10 @@ _cleanup_:
     cvDestroyWindow("result");
     cvDestroyWindow("closet1");
     cvDestroyWindow("closet2");
-    cvDestroyWindow("closet3");
+    //cvDestroyWindow("closet3");
     cvReleaseImage(&cloth_img1);
     cvReleaseImage(&cloth_img2);
-    cvReleaseImage(&cloth_img3);
+    //cvReleaseImage(&cloth_img3);
     return 0;
 }
 
@@ -313,9 +320,15 @@ void detectAndDraw( Mat& img,
                  //circle( img, center, radius, color, 3, 8, 0 );             
         /*Rectangle*/
         CvPoint point1, point2;                
-        point1.x = r->x - r->width*0.9;
+		/*origin*/
+        //point1.x = r->x - r->width*0.9;
+        //point2.x = r->x + r->width*1.8;
+        //point1.y = r->y + r->height*0.9;
+        //point2.y = r->y + r->height*4.1;
+
+        point1.x = r->x - r->width*1.4;
         point2.x = r->x + r->width*1.8;
-        point1.y = r->y + r->height*0.9;
+        point1.y = r->y + r->height*1.3;
         point2.y = r->y + r->height*4.1;
         //calculate rect. width&height
         rec_width = point2.x-point1.x;
@@ -328,7 +341,7 @@ void detectAndDraw( Mat& img,
         //point1.x = 125;
 
         /*Put on clothes function*/
-		//if(switch_cloth_trigger){
+		#if 0
 		for(i = point1.y ; i < point1.y+150 ; i++){
 			if (i<480)
 			{
@@ -344,7 +357,35 @@ void detectAndDraw( Mat& img,
 				}	
     		}
 		}
-		//}
+		#endif
+
+
+		for(i = point1.y ; i < point1.y+150 ; i++){
+				if (i<480)
+				{
+						for(j = (point1.x)*3  ; j < (150+point1.x)*3 ; j = j+3){       /*if(signed char "-1" >> white[255])*/
+
+								if(((i-point1.y)*452+j-point1.x*3) < 67000){
+										if( (cloth_img_select->imageData[(i-point1.y)*452+j-point1.x*3] + cloth_img_select->imageData[(i-point1.y)*452+j-point1.x*3+1] + cloth_img_select->imageData[(i-point1.y)*452+j-point1.x*3+2])/3 >200 ){/*do not copy from cloth_image*/
+										}
+										else{
+												img.data[i*( img.cols * 3)+j] = cloth_img_select->imageData[(i-point1.y)*452+j-point1.x*3];            
+												img.data[i*( img.cols * 3)+j+1] = cloth_img_select->imageData[(i-point1.y)*452+j-point1.x*3+1];
+												img.data[i*( img.cols * 3)+j+2] = cloth_img_select->imageData[(i-point1.y)*452+j-point1.x*3+2];
+										}
+								}
+						}   
+				}
+		}
+
+
+
+
+
+
+
+
+
     	#if 0
         if( nestedCascade.empty() )
             continue;
@@ -380,9 +421,9 @@ void onMouse1(int event,int x,int y,int flag,void* param){
         }
         /*mouse right button down*/
         if(event==CV_EVENT_RBUTTONDOWN){
-            motor_control(8, 1, 1);
+            motor_control(5, 1, 1);
             sleep(5);
-            motor_control(8, 1, 2);
+            motor_control(6, 1, 2);
         }
         if(flag==CV_EVENT_FLAG_LBUTTON){
         }
@@ -398,9 +439,9 @@ void onMouse2(int event,int x,int y,int flag,void* param){
         }
         /*mouse right button down*/
         if(event==CV_EVENT_RBUTTONDOWN){
-            motor_control(8, 2, 1);
+            motor_control(5, 2, 1);
             sleep(5);
-            motor_control(8, 2, 2);
+            motor_control(5, 2, 2);
         }
         if(flag==CV_EVENT_FLAG_LBUTTON){
         }
