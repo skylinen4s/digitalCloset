@@ -80,7 +80,7 @@ int main( int argc, const char** argv )
     cvNamedWindow( "closet2", CV_WINDOW_AUTOSIZE );
     //cvNamedWindow( "closet3", 1 );
 
-
+    /*set window position on the monitor*/
     cvMoveWindow("closet1", 360, 0);
     cvMoveWindow("closet2", 800, 0);
 
@@ -168,7 +168,7 @@ int main( int argc, const char** argv )
         image = imread( "lena.jpg", 1 );
         if(image.empty()) cout << "Couldn't read lena.jpg" << endl;
     }
-
+    /*set video window */
     cvNamedWindow( "result", 1 );
 
     if( capture )
@@ -359,12 +359,12 @@ void detectAndDraw( Mat& img,
 		}
 		#endif
 
-
+        /*main code to paste cloth image*/
 		for(i = point1.y ; i < point1.y+150 ; i++){
 				if (i<480)
 				{
 						for(j = (point1.x)*3  ; j < (150+point1.x)*3 ; j = j+3){       /*if(signed char "-1" >> white[255])*/
-
+								/*452 for our Beagleboard xM, 450 for x86*/
 								if(((i-point1.y)*452+j-point1.x*3) < 67000){
 										if( (cloth_img_select->imageData[(i-point1.y)*452+j-point1.x*3] + cloth_img_select->imageData[(i-point1.y)*452+j-point1.x*3+1] + cloth_img_select->imageData[(i-point1.y)*452+j-point1.x*3+2])/3 >200 ){/*do not copy from cloth_image*/
 										}
@@ -410,17 +410,23 @@ void detectAndDraw( Mat& img,
     cv::imshow( "result", img );
 }
 
-
+/*Sets mouse handler for "closet1" window*/
 void onMouse1(int event,int x,int y,int flag,void* param){
 
         /*mouse left button down*/
         if(event==CV_EVENT_LBUTTONDOWN){
+                /*copy image data to the video*/
 				cloth_img_select->imageData = cloth_img1->imageData;
 				//memcpy(cloth_img_select->imageData , cloth_img )
+
+                /*switch on face detection function*/
                 switch_cloth_trigger = 1;
         }
         /*mouse right button down*/
         if(event==CV_EVENT_RBUTTONDOWN){
+            /*control motor1 under the closet 1st layer
+             *(digitalCloset_Motorcontrol.c)
+             *motor_control(int controlTime, int motorNumber, int orient)*/
             motor_control(5, 1, 1);
             sleep(5);
             motor_control(6, 1, 2);
@@ -430,15 +436,21 @@ void onMouse1(int event,int x,int y,int flag,void* param){
         if(event==CV_EVENT_MOUSEMOVE){
         }
 }
+/*Sets mouse handler for "closet2" window*/
 void onMouse2(int event,int x,int y,int flag,void* param){
 
         /*mouse left button down*/
         if(event==CV_EVENT_LBUTTONDOWN){
+                /*copy image data to the video*/
                 cloth_img_select->imageData = cloth_img2->imageData;
+                /*switch on face detection function*/
                 switch_cloth_trigger = 1;
         }
         /*mouse right button down*/
         if(event==CV_EVENT_RBUTTONDOWN){
+            /*control motor2 under the closet 2nd layer
+             *(digitalCloset_Motorcontrol.c)
+             *motor_control(int controlTime, int motorNumber, int orient)*/
             motor_control(5, 2, 1);
             sleep(5);
             motor_control(5, 2, 2);
@@ -448,5 +460,3 @@ void onMouse2(int event,int x,int y,int flag,void* param){
         if(event==CV_EVENT_MOUSEMOVE){
         }
 }
-
-
